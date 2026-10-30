@@ -33,19 +33,37 @@ class ForestMap {
       attempts++;
       this.initEmptyGrid();
 
-      // 1. Carve primary winding path from start to exit
-      this.playerStart = { x: 2, y: 2 };
-      this.exitPos = { x: this.width - 3, y: this.height - 3 };
+      // 1. Establish start camp and exit gateway coordinates
+      this.playerStart = { x: 3, y: 3 };
+      this.exitPos = { x: this.width - 4, y: this.height - 4 };
 
+      // Carve 3x3 open starting campsite so player never starts trapped
+      for (let cy = this.playerStart.y - 1; cy <= this.playerStart.y + 1; cy++) {
+        for (let cx = this.playerStart.x - 1; cx <= this.playerStart.x + 1; cx++) {
+          this.grid[cy][cx] = TILE.PATH;
+        }
+      }
+
+      // Carve 3x3 exit gateway clearing
+      for (let cy = this.exitPos.y - 1; cy <= this.exitPos.y + 1; cy++) {
+        for (let cx = this.exitPos.x - 1; cx <= this.exitPos.x + 1; cx++) {
+          this.grid[cy][cx] = TILE.PATH;
+        }
+      }
+      this.grid[this.exitPos.y][this.exitPos.x] = TILE.EXIT;
+
+      // 2. Carve primary winding path connecting start to exit
       this.carveTrunkPath(this.playerStart, this.exitPos);
 
-      // 2. Carve multiple natural branch loops and clearings
+      // 3. Carve multiple natural branch loops and clearings
       this.carveClearingsAndLoops();
 
-      // 3. Verify solvability using BFS
+      // Ensure exit is properly restored
+      this.grid[this.exitPos.y][this.exitPos.x] = TILE.EXIT;
+
+      // 4. Verify solvability using BFS
       const shortestPath = this.findPath(this.playerStart, this.exitPos);
-      if (shortestPath && shortestPath.length >= 22) {
-        // Map is nicely winding and guaranteed solvable!
+      if (shortestPath && shortestPath.length >= 20) {
         this.populateFeatures(shortestPath);
         this.initFog();
         return true;
@@ -191,7 +209,7 @@ class ForestMap {
 
     // 2. Groves (Dense stealth thickets): 6-8 scattered across the woods
     const groveCandidates = allPaths.filter(p =>
-      this.grid[p.y][p.x] === TILE.PATH && p.distToStart >= 3
+      this.grid[p.y][p.x] === TILE.PATH && p.distToStart >= 4
     );
     this.shuffle(groveCandidates);
     const groveCount = Math.min(7, groveCandidates.length);
@@ -203,7 +221,7 @@ class ForestMap {
 
     // 3. Fireflies: 7-9 placed both along pathways and rewarding side explorations
     const fireflyCandidates = allPaths.filter(p =>
-      this.grid[p.y][p.x] === TILE.PATH && p.distToStart >= 3 && p.distToExit >= 2
+      this.grid[p.y][p.x] === TILE.PATH && p.distToStart >= 4 && p.distToExit >= 2
     );
     this.shuffle(fireflyCandidates);
     const fireflyCount = Math.min(8, fireflyCandidates.length);

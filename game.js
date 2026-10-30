@@ -17,7 +17,7 @@ class LanternRunGame {
     this.elapsedSeconds = 0;
 
     this.logs = [];
-    this.maxLogs = 4;
+    this.maxLogs = 3;
     this.lastInputTime = 0;
     this.inputCooldown = 140; // ms minimum between inputs to prevent unintended runaway moves
     this.reduceMotion = false;
@@ -27,6 +27,7 @@ class LanternRunGame {
       fuelFill: document.getElementById('fuel-fill'),
       fuelValue: document.getElementById('fuel-value'),
       fuelWarning: document.getElementById('fuel-warning'),
+      statusMsgText: document.getElementById('status-msg-text'),
       stepsValue: document.getElementById('steps-value'),
       firefliesValue: document.getElementById('fireflies-value'),
       flashesValue: document.getElementById('flashes-value'),
@@ -99,6 +100,9 @@ class LanternRunGame {
     this.state = 'playing';
     this.lossReason = null;
     this.logs = [];
+
+    // Snap camera to start position
+    this.renderer.camInitialized = false;
 
     // Initial vision update
     this.forestMap.updateVisibility(this.player.x, this.player.y, this.player.fuel);
@@ -504,6 +508,9 @@ class LanternRunGame {
     this.logs.unshift(message);
     if (this.logs.length > this.maxLogs) {
       this.logs.pop();
+    }
+    if (this.elements.statusMsgText) {
+      this.elements.statusMsgText.textContent = message;
     }
     this.renderLogs();
   }

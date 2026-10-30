@@ -214,6 +214,23 @@ html, body {
   font-variant-numeric: tabular-nums;
 }
 
+.status-msg-pill {
+  flex: 1;
+  max-width: 420px;
+  font-size: 0.82rem;
+  color: var(--accent-lantern-light);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  background: rgba(255, 255, 255, 0.04);
+  padding: 4px 10px;
+  border-radius: var(--radius-sm);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
 .stats-group {
   display: flex;
   align-items: center;
@@ -257,14 +274,13 @@ html, body {
 /* Event Log Feed overlay */
 .log-feed-container {
   position: absolute;
-  top: 12px;
-  left: 14px;
-  right: 14px;
-  max-width: 520px;
+  bottom: 16px;
+  left: 16px;
+  max-width: 440px;
   pointer-events: none;
   z-index: 5;
   display: flex;
-  flex-direction: column;
+  flex-direction: column-reverse;
   gap: 6px;
 }
 
