@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Lantern Run — Atmospheric Forest Survival</title>
+  <meta name="description" content="A tense, atmospheric survival browser game. Navigate a dark moonlit forest, gather fireflies, evade prowling creatures, and reach the forest gate before your lantern dies.">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div id="app-container">
+    <!-- Top Header Navigation & Settings -->
+    <header class="game-header">
+      <div class="brand-section">
+        <span class="brand-icon" aria-hidden="true">🏮</span>
+        <h1 class="game-title">Lantern Run</h1>
+        <div id="stealth-badge" class="stealth-badge" aria-live="polite">
+          <span>🌿</span> Hidden in Grove
+        </div>
+      </div>
+
+      <nav class="header-controls" aria-label="Game controls">
+        <button id="btn-help" class="btn-ctrl" title="Help & Rules (H)" aria-label="Help and rules">
+          <span class="icon">❓</span><span class="label">Rules</span>
+        </button>
+        <button id="btn-pause" class="btn-ctrl" title="Pause Game (P / Esc)" aria-label="Pause game">
+          <span class="icon">⏸️</span><span class="label">Pause</span>
+        </button>
+        <button id="btn-restart" class="btn-ctrl" title="Start Fresh Forest (R)" aria-label="Restart run">
+          <span class="icon">🔄</span><span class="label">Restart</span>
+        </button>
+        <button id="btn-mute" class="btn-ctrl" title="Toggle Audio (M)" aria-label="Toggle mute" aria-pressed="false">
+          <span class="icon">🔊</span><span class="label">Sound</span>
+        </button>
+        <button id="btn-motion" class="btn-ctrl" title="Toggle Motion Effects" aria-label="Toggle motion effects" aria-pressed="false">
+          <span class="icon">✨</span><span class="label">Motion: On</span>
+        </button>
+      </nav>
+    </header>
+
+    <!-- Status Bar / Game Metrics HUD -->
+    <section class="status-bar" aria-label="Player survival status">
+      <div class="fuel-gauge-container">
+        <div class="fuel-label">
+          <span aria-hidden="true">🔥</span> Lantern Fuel
+        </div>
+        <div class="fuel-track" role="progressbar" aria-label="Lantern Fuel Remaining" aria-valuenow="65" aria-valuemin="0" aria-valuemax="100">
+          <div id="fuel-fill" class="fuel-fill normal"></div>
+        </div>
+        <div id="fuel-value" class="fuel-value">65%</div>
+      </div>
+
+      <div class="stats-group">
+        <div class="hud-stat" title="Steps / Turns Taken">
+          <span class="stat-icon" aria-hidden="true">👣</span>
+          <span class="stat-text"><strong id="steps-value">0</strong></span>
+        </div>
+        <div class="hud-stat" title="Fireflies Collected">
+          <span class="stat-icon" aria-hidden="true">✨</span>
+          <span class="stat-text"><strong id="fireflies-value">0</strong></span>
+        </div>
+        <div class="hud-stat" title="Flares Remaining">
+          <span class="stat-icon" aria-hidden="true">⚡</span>
+          <span class="stat-text"><strong id="flashes-value">2</strong></span>
+        </div>
+      </div>
+    </section>
+
+    <!-- Main Forest Viewport & Narrative Logs -->
+    <main class="game-viewport">
+      <canvas id="game-canvas" width="600" height="600" aria-label="Interactive forest map grid"></canvas>
+
+      <!-- Recent Event Feedback Log -->
+      <aside class="log-feed-container" aria-live="polite" aria-atomic="true">
+        <div id="log-feed"></div>
+      </aside>
+    </main>
+
+    <!-- Mobile & Touch Controls Panel -->
+    <footer class="mobile-controls-panel" aria-label="Touch game controls">
+      <div class="controls-inner">
+        <!-- Virtual D-Pad -->
+        <div class="dpad" role="group" aria-label="Directional movement">
+          <div></div>
+          <button id="btn-up" class="dpad-btn" aria-label="Move Up (North)">▲</button>
+          <div></div>
+          <button id="btn-left" class="dpad-btn" aria-label="Move Left (West)">◀</button>
+          <div class="dpad-center" aria-hidden="true"></div>
+          <button id="btn-right" class="dpad-btn" aria-label="Move Right (East)">▶</button>
+          <div></div>
+          <button id="btn-down" class="dpad-btn" aria-label="Move Down (South)">▼</button>
+          <div></div>
+        </div>
+
+        <!-- Mobile Action Buttons -->
+        <div class="action-buttons">
+          <button id="btn-wait" class="action-btn" aria-label="Wait a turn">
+            <span>⏳</span> Wait (Pass Turn)
+          </button>
+          <button id="btn-flash" class="action-btn flash-btn" aria-label="Use Lantern Flare to stun stalkers">
+            <span>⚡</span> Flare (Stun Beasts)
+          </button>
+        </div>
+      </div>
+    </footer>
+  </div>
+
+  <!-- Help & Rules Dialog (Modern HTML5 <dialog>) -->
+  <dialog id="help-dialog" aria-labelledby="help-title" closedby="any">
+    <div class="dialog-header">
+      <span class="dialog-icon" aria-hidden="true">🏮</span>
+      <h2 id="help-title" class="dialog-title">Guide to Whispering Pines</h2>
+      <p class="dialog-desc">You are stranded in a dark, shifting forest. Reach the Forest Gate before your lantern burns out or the creatures find you.</p>
+    </div>
+
+    <div class="rules-grid">
+      <div class="rule-card">
+        <div class="rule-card-title"><span>🏮</span> Lantern Light</div>
+        <p class="rule-card-desc">Each step or turn costs 1 fuel. Low fuel shrinks your sight radius. If fuel reaches 0%, darkness takes you.</p>
+      </div>
+
+      <div class="rule-card">
+        <div class="rule-card-title"><span>✨</span> Fireflies</div>
+        <p class="rule-card-desc">Gather glowing firefly swarms along paths to restore +25 lantern fuel and keep the shadows at bay.</p>
+      </div>
+
+      <div class="rule-card">
+        <div class="rule-card-title"><span>🏛️</span> Ancient Shrines</div>
+        <p class="rule-card-desc">Step into stone shrines to unveil an expansive area of the forest and restore 1 Lantern Flare charge.</p>
+      </div>
+
+      <div class="rule-card">
+        <div class="rule-card-title"><span>🌿</span> Misty Groves</div>
+        <p class="rule-card-desc">Dense thickets camouflage you from prowling beasts. Hide inside them to break line of sight!</p>
+      </div>
+
+      <div class="rule-card">
+        <div class="rule-card-title"><span>🐾</span> Shadow Stalkers</div>
+        <p class="rule-card-desc">Dangerous beasts roam the woods. When nearby, they track your steps. Evade them or use a Flare.</p>
+      </div>
+
+      <div class="rule-card">
+        <div class="rule-card-title"><span>⚡</span> Blinding Flare</div>
+        <p class="rule-card-desc">Press [F] or tap Flare to burst radiant light, stunning all nearby creatures for 3 turns (costs 2 fuel).</p>
+      </div>
+    </div>
+
+    <div class="controls-summary">
+      <strong>Controls:</strong>
+      <ul>
+        <li><kbd>Arrow Keys</kbd> or <kbd>WASD</kbd>: Move</li>
+        <li><kbd>Space</kbd>: Wait (Pass 1 turn)</li>
+        <li><kbd>F</kbd>: Lantern Flare (Stun)</li>
+        <li><kbd>P</kbd> or <kbd>Esc</kbd>: Pause</li>
+        <li><kbd>R</kbd>: Restart Run</li>
+        <li><kbd>M</kbd>: Mute Sound</li>
+      </ul>
+    </div>
+
+    <form method="dialog" class="dialog-actions">
+      <button id="btn-help-close" class="btn-primary" autofocus>Begin Run</button>
+    </form>
+  </dialog>
+
+  <!-- Pause Dialog -->
+  <dialog id="pause-dialog" aria-labelledby="pause-title">
+    <div class="dialog-header">
+      <span class="dialog-icon" aria-hidden="true">⏸️</span>
+      <h2 id="pause-title" class="dialog-title">Game Paused</h2>
+      <p class="dialog-desc">The forest awaits your return. Take your time to plan your route.</p>
+    </div>
+
+    <form method="dialog" class="dialog-actions">
+      <button id="btn-pause-resume" class="btn-primary" autofocus>Resume</button>
+      <button id="btn-pause-restart" class="btn-secondary" type="button">Restart Run</button>
+    </form>
+  </dialog>
+
+  <!-- Run Conclusion Dialog (Win / Loss) -->
+  <dialog id="end-dialog" aria-labelledby="end-title">
+    <div class="dialog-header">
+      <span id="end-icon" class="dialog-icon" aria-hidden="true">🌟</span>
+      <h2 id="end-title" class="dialog-title">Dawn Breaks</h2>
+      <p id="end-message" class="dialog-desc"></p>
+    </div>
+
+    <div id="end-stats" class="stats-cards-grid"></div>
+
+    <form method="dialog" class="dialog-actions">
+      <button id="btn-play-again" class="btn-primary" autofocus>Play Again</button>
+    </form>
+  </dialog>
+
+  <!-- Game Scripts -->
+  <script src="audio.js"></script>
+  <script src="map.js"></script>
+  <script src="entities.js"></script>
+  <script src="renderer.js"></script>
+  <script src="game.js"></script>
+</body>
+</html>
